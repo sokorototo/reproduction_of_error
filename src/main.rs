@@ -1,3 +1,4 @@
+use rayon::prelude::*;
 use std::{
     io::{Cursor, Read, Seek, SeekFrom},
     sync::{Arc, Mutex},
@@ -58,8 +59,8 @@ fn main() {
     let source = Cursor::new(DATA);
     let reader = Reader(Arc::new(Mutex::new(source)));
 
-    for mock in 0..180 {
+    (0..180).into_par_iter().for_each(|mock|{
         let entry = Entry::new(mock);
         reader.fetch_raw(&entry);
-    }
+    })
 }
