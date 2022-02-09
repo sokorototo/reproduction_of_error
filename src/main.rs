@@ -5,7 +5,7 @@ use std::{
 };
 
 // The data in transit
-const DATA: [u8; 200] = [69u8; 200];
+const DATA: [u8; 200] = *b"01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789";
 
 // A reader that can be sent over threads as it is both `Send` and `Sync`
 struct Reader<T: Read + Seek>(Arc<Mutex<T>>);
@@ -28,11 +28,11 @@ impl<T: Read + Seek> Reader<T> {
             guard.read_exact(raw.as_mut_slice()).unwrap();
         }
 
-        assert_eq!(&raw, &DATA[0..entry.offset]);
+        let region = (entry.location) as usize..(entry.location as usize + entry.offset);
+        assert_eq!(&raw, &DATA[region]);
 
         raw
     }
-
 }
 
 /// An entry from which one can read data from a reader
@@ -54,7 +54,7 @@ fn main() {
     let source = Cursor::new(DATA);
     let reader = Reader(Arc::new(Mutex::new(source)));
 
-    (0..180).into_par_iter().for_each(|mock|{
+    (0..2).into_par_iter().for_each(|mock| {
         let entry = Entry::new(mock);
         reader.fetch_raw(&entry);
     })
