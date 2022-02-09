@@ -22,12 +22,7 @@ impl<T: Read + Seek> Reader<T> {
         }
 
         {
-            let mut guard = match self.0.lock() {
-                Ok(guard) => guard,
-                Err(err) => {
-                    panic!("{}", err);
-                }
-            };
+            let mut guard = self.0.lock().unwrap();
 
             guard.seek(SeekFrom::Start(entry.location)).unwrap();
             guard.read_exact(raw.as_mut_slice()).unwrap();
